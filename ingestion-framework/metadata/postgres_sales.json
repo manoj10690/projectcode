@@ -1,0 +1,15 @@
+{
+  "source_type": "postgres",
+  "connection": {
+    "host": "db.example.com",
+    "port": 5432,
+    "user": "admin",
+    "password": "secure_password"
+  },
+  "target_table": "bigquery_dataset.sales_data",
+  "transform_rules": {
+    "drop_nulls": true,
+    "validate_regex": {"email": ".+@.+"}
+  }
+}
+
