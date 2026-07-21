@@ -1,0 +1,6 @@
+{"order_id": "O1001", "customer_id": "C001", "order_amount": 249.50, "order_status": "PLACED", "order_ts": "2026-07-20T10:15:00Z"}
+{"order_id": "O1002", "customer_id": "C002", "order_amount": 89.99, "order_status": "SHIPPED", "order_ts": "2026-07-20T10:16:00Z"}
+{"order_id": "O1003", "customer_id": "C003", "order_amount": -15.00, "order_status": "PLACED", "order_ts": "2026-07-20T10:17:00Z"}
+{"order_id": "", "customer_id": "C004", "order_amount": 40.00, "order_status": "PLACED", "order_ts": "2026-07-20T10:18:00Z"}
+{"order_id": "O1005", "customer_id": "C005", "order_amount": 120.00, "order_status": "PLACED", "order_ts": "2026-07-20T10:19:00Z", "loyalty_tier": "GOLD"}
+{"order_id": "O1006" "customer_id": "C006" "order_amount": 15.00}

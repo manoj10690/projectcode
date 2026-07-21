@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+<head>
+  <title>{{ pipeline.name }} - Pipeline Detail</title>
+  <style>
+    body { font-family: -apple-system, Arial, sans-serif; margin: 40px; background: #f7f8fa; color: #1a1a1a; }
+    table { border-collapse: collapse; width: 100%; background: white; margin-bottom: 30px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);}
+    th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eee; font-size: 13px; }
+    th { background: #f0f1f3; }
+    h2 { font-size: 16px; margin-top: 30px; }
+    code { background: #eee; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <a href="{{ url_for('dashboard') }}">&larr; back</a>
+  <h1>{{ pipeline.name }}</h1>
+  <p>{{ pipeline.description }}</p>
+  <p>Source: <code>{{ pipeline.source_type }}</code> &mdash; Evolution policy: <code>{{ pipeline.evolution_policy }}</code></p>
+
+  <h2>Schema Versions</h2>
+  <table>
+    <tr><th>Version</th><th>Active</th><th>Fields</th></tr>
+    {% for s in schemas %}
+    <tr>
+      <td>v{{ s.version_number }}</td>
+      <td>{{ "Yes" if s.active_status else "No" }}</td>
+      <td><code>{{ s.schema_json }}</code></td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>Active DQ Rules</h2>
+  <table>
+    <tr><th>Column</th><th>Constraint</th><th>Value</th><th>Severity</th></tr>
+    {% for r in rules %}
+    <tr>
+      <td>{{ r.target_column }}</td><td>{{ r.constraint_type }}</td>
+      <td>{{ r.constraint_value or "-" }}</td><td>{{ r.severity }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  <h2>Recent Runs</h2>
+  <table>
+    <tr><th>Run</th><th>Status</th><th>Rows Written</th><th>Rows Quarantined</th><th>Started</th></tr>
+    {% for r in runs %}
+    <tr>
+      <td>{{ r.run_id }}</td><td>{{ r.status }}</td>
+      <td>{{ r.rows_written }}</td><td>{{ r.rows_quarantined }}</td>
+      <td>{{ r.started_at }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">No runs yet.</td></tr>
+    {% endfor %}
+  </table>
+
+  <h2>DQ / Drift Alerts</h2>
+  <table>
+    <tr><th>Source</th><th>Failed Rows</th><th>Detail</th><th>When</th></tr>
+    {% for a in alerts %}
+    <tr>
+      <td>{{ a.alert_source }}</td><td>{{ a.failed_row_count }}</td>
+      <td><code>{{ a.sample_payload }}</code></td><td>{{ a.created_at }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4">No alerts.</td></tr>
+    {% endfor %}
+  </table>
+</body>
+</html>

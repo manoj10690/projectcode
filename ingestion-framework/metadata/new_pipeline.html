@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+  <title>Register New Pipeline</title>
+  <style>
+    body { font-family: -apple-system, Arial, sans-serif; margin: 40px; background: #f7f8fa; color: #1a1a1a; max-width: 700px; }
+    label { display: block; margin-top: 14px; font-size: 14px; font-weight: 600; }
+    input, select, textarea { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box;
+      border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
+    .field-row { display: flex; gap: 8px; align-items: center; margin-top: 6px; }
+    .field-row input[type=text] { flex: 2; }
+    .field-row select { flex: 1; }
+    button { margin-top: 20px; background: #1a56db; color: white; border: none; padding: 10px 20px;
+      border-radius: 6px; font-size: 14px; cursor: pointer; }
+    #addFieldBtn { background: #e5e7eb; color: #1a1a1a; padding: 6px 12px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Register New Pipeline</h1>
+  <form method="POST">
+    <label>Pipeline Name</label>
+    <input type="text" name="name" required placeholder="e.g. customer_orders_feed">
+
+    <label>Description</label>
+    <textarea name="description" rows="2"></textarea>
+
+    <label>Source Type</label>
+    <select name="source_type">
+      <option value="FILE">FILE (GCS drop)</option>
+      <option value="API">API</option>
+      <option value="POSTGRES">POSTGRES (CDC)</option>
+      <option value="KAFKA">KAFKA</option>
+      <option value="PUBSUB">PUBSUB</option>
+    </select>
+
+    <label>Source Path / Glob</label>
+    <input type="text" name="source_glob" required placeholder="gs://<bronze-bucket>/incoming/<name>/*.json">
+
+    <label>Sink BigQuery Dataset</label>
+    <input type="text" name="sink_dataset" value="silver" required>
+
+    <label>Sink BigQuery Table</label>
+    <input type="text" name="sink_table" required placeholder="e.g. customer_orders">
+
+    <label>Schema Evolution Policy</label>
+    <select name="evolution_policy">
+      <option value="ALLOW_ADDITIONS">Allow new columns automatically</option>
+      <option value="STRICT">Reject unknown columns</option>
+      <option value="IGNORE">Ignore / drop unknown columns</option>
+    </select>
+
+    <h3>Schema Fields</h3>
+    <div id="fields">
+      <div class="field-row">
+        <input type="text" name="field_name" placeholder="column name">
+        <select name="field_type">
+          <option>STRING</option><option>NUMERIC</option><option>INT64</option>
+          <option>BOOLEAN</option><option>TIMESTAMP</option><option>DATE</option>
+        </select>
+        <label style="margin:0;font-weight:400;"><input type="checkbox" name="required_field" value="" style="width:auto;"> required</label>
+      </div>
+    </div>
+    <button type="button" id="addFieldBtn" onclick="addField()">+ Add Field</button>
+
+    <br>
+    <button type="submit">Create Pipeline</button>
+  </form>
+
+  <script>
+    function addField() {
+      const container = document.getElementById('fields');
+      const row = container.children[0].cloneNode(true);
+      row.querySelectorAll('input[type=text]').forEach(i => i.value = '');
+      container.appendChild(row);
+    }
+    // keep the "required" checkbox value in sync with its row's field name
+    document.getElementById('fields').addEventListener('input', (e) => {
+      if (e.target.name === 'field_name') {
+        const row = e.target.closest('.field-row');
+        row.querySelector('input[type=checkbox]').value = e.target.value;
+      }
+    });
+  </script>
+</body>
+</html>

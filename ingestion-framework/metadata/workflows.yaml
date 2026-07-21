@@ -1,0 +1,54 @@
+# Cloud Workflows -- lightweight event-driven orchestrator.
+# Triggered by Eventarc whenever a new object lands in the bronze bucket.
+# For production-scale scheduling/backfills/retries, promote to the Composer
+# DAG in orchestration/airflow_dag.py instead (Ch.5.1.1 notes both options).
+#
+# Deployed by Terraform (google_workflows_workflow.ingest_workflow).
+
+main:
+  params: [event]
+  steps:
+    - init:
+        assign:
+          - project_id: ${sys.get_env("GOOGLE_CLOUD_PROJECT_ID")}
+          - region: "us-central1"
+          - bucket: ${event.data.bucket}
+          - object_name: ${event.data.name}
+          - pipeline_id: ${text.split(object_name, "/")[1]}
+            # convention: incoming/<pipeline_id>/<file>.json
+
+    - logStart:
+        call: sys.log
+        args:
+          text: ${"New file " + object_name + " for pipeline " + pipeline_id}
+          severity: INFO
+
+    - launchDataflow:
+        call: http.post
+        args:
+          url: ${"https://dataflow.googleapis.com/v1b3/projects/" + project_id + "/locations/" + region + "/flexTemplates:launch"}
+          auth:
+            type: OAuth2
+          body:
+            launchParameter:
+              jobName: ${"ingest-" + pipeline_id + "-" + string(sys.now())}
+              containerSpecGcsPath: ${"gs://" + project_id + "-dev-df-staging/templates/ingest-engine.json"}
+              parameters:
+                pipeline_id: ${pipeline_id}
+                input: ${"gs://" + bucket + "/" + object_name}
+                dlq_path: ${"gs://" + project_id + "-dev-quarantine-dlq"}
+                output_table: ${project_id + ":silver.customer_orders"}
+                db_host: ${sys.get_env("METADATA_DB_HOST")}
+                db_name: "ingest_metadata"
+                db_user: "ingest_app"
+                db_password: ${sys.get_env("METADATA_DB_PASSWORD")}
+        result: launchResult
+
+    - logResult:
+        call: sys.log
+        args:
+          text: ${"Launched Dataflow job: " + json.encode_to_string(launchResult)}
+          severity: INFO
+
+    - complete:
+        return: ${launchResult}

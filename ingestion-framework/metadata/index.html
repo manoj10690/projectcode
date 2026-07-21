@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <title>Self-Service Ingestion Platform</title>
+  <style>
+    body { font-family: -apple-system, Arial, sans-serif; margin: 40px; background: #f7f8fa; color: #1a1a1a; }
+    h1 { font-size: 22px; }
+    table { border-collapse: collapse; width: 100%; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid #eee; font-size: 14px; }
+    th { background: #f0f1f3; }
+    .status-SUCCEEDED { color: #1a7f37; font-weight: 600; }
+    .status-FAILED { color: #c0342c; font-weight: 600; }
+    .status-RUNNING { color: #9a6700; font-weight: 600; }
+    .status-QUARANTINED_PARTIAL { color: #b35c00; font-weight: 600; }
+    a.button { display: inline-block; background: #1a56db; color: white; padding: 8px 16px;
+               border-radius: 6px; text-decoration: none; font-size: 14px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <h1>Metadata-Driven Ingestion Platform</h1>
+  <a class="button" href="{{ url_for('new_pipeline') }}">+ Register New Pipeline</a>
+  <table>
+    <tr>
+      <th>Pipeline</th><th>Source Type</th><th>Active</th>
+      <th>Last Run</th><th>Rows Written</th><th>Rows Quarantined</th>
+    </tr>
+    {% for p in pipelines %}
+    <tr>
+      <td><a href="{{ url_for('pipeline_detail', pipeline_id=p.pipeline_id) }}">{{ p.name }}</a></td>
+      <td>{{ p.source_type }}</td>
+      <td>{{ "Yes" if p.is_active else "No" }}</td>
+      <td class="status-{{ p.last_run_status }}">{{ p.last_run_status or "never run" }}</td>
+      <td>{{ p.rows_written or "-" }}</td>
+      <td>{{ p.rows_quarantined or "-" }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="6">No pipelines registered yet.</td></tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
